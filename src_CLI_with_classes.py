@@ -96,7 +96,7 @@ def add_func(*args, **kwargs):
 
 
 def change_func(*args, **kwargs):
-    contacts = AddressBook(kwargs['contacts'])
+    contacts = kwargs['contacts']
 # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
 # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
 # позиционные параметры add_funс (в мейне): result = func(*text, Contacts=Contacts)
@@ -109,12 +109,12 @@ def change_func(*args, **kwargs):
     # если имени нет в словаре, оно добавится, если нет - поменяется номер
     # contacts[name] = new_phone
     # метод edit_phone у нас для списка, мы извлекаем список по ключу словаря
-    rec = contacts.get(name)
+    rec = contacts.get(name.value)
     if rec:
         rec.edit_phone(old_phone, new_phone)
         return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
     # return f"Phone {new_phone} for contact {name} added successfully.", contacts # Якщо change буде додавати нові номери, то це не зовсім логічно(
-    return f'Contact with {name} dos not exist'
+    return f'Contact {name} dos not exist', contacts
 
 
 
