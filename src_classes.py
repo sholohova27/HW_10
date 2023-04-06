@@ -1,6 +1,3 @@
-# import json
-# # эта ошибка возникала при пустом файле contacts.json, ментор посоветовал импортировать ее явно
-# from json.decoder import JSONDecodeError
 from collections import UserDict
 
 
@@ -19,8 +16,11 @@ class Field:
     def __repr__(self):
         return str(self)
 
-    def __eq__(self):
-        return str(self)
+    # def __eq__(self):
+    #     return str(self)
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 # поле с именем
@@ -45,15 +45,15 @@ class Record:
 
     def del_phone(self, phone: Phone):
         for p in self.phones:
-            if p.value == phone.value:
+            if p == phone:
                 self.phones.remove(p)
                 return f"Phone number {phone} has been deleted from contact {self.name}"
         return f'{phone} not in list'
 
     def edit_phone(self, old_phone: Phone, new_phone: Phone):
         try:
-            index = self.phone.index(old_phone)
-            self.phone[index] = new_phone
+            index = self.phones.index(old_phone)
+            self.phones[index] = new_phone
             return f"Phone number {old_phone} has been substituted with {new_phone} for contact {self.name}"
         except ValueError:
             return f'{old_phone} not in list'
@@ -63,15 +63,15 @@ class Record:
 
 
 # name1 = Record("Nataly", "+34")
-# # print(name1.add_phone("44"))
-# print(name1.phone)
+# print(name1.add_phone("44"))
+# print(name1.phones)
 # name2 = Name('Andrew')
-# # print(name2)
+# print(name2)
 # phone2 = Phone('+096')
-# # print(phone2)
+# print(phone2)
 # record2 = Record(name2, phone2)
-# print(record2.phone)
-# print(name1.del_phone(4487654))
+# print(record2.phones)
+# print(name1.del_phone('4487654'))
 # print(name1.edit_phone("44006600", "38"))
 
 
@@ -80,10 +80,11 @@ class AddressBook(UserDict):
     # ожидает поля объекта Record (name, phone)
     def add_record(self, record: Record):
         if record.name == self.get('name'):
-            return f'{record.name} is already in contacts'
+            return f'{record.name.value} is already in contacts'
         # data - поле UserDict
-        self.data[record.name] = record.phone
-        return f'{record.name} with {record.phone} phone is successfully added in contacts'
+        # т.к. в классе Name есть маг. метод __str__, можно просто record.name
+        self.data[record.name] = record.phones
+        return f'{record.name} with {record.phones} phone is successfully added in contacts'
 
     def show_all(self):
         return self.data
@@ -109,8 +110,8 @@ if __name__ == '__main__':
 
     name1 = Record(name, phone)
 
-    print(name1.phones)
+    # print(name1.phones)
+    #
+    print(name1.add_phone(Phone("+555")))
 
-    print(name1.del_phone(Phone("+095")))
-
-    print(name1.phones)
+    print(name1)
