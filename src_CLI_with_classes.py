@@ -52,17 +52,22 @@ def help_func(*args, **kwargs):
 
 
 # передаем словарь Contacts из ф-и main в качестве аргумента
-# @Index_Key_error_func
+@Index_Key_error_func
 def add_func(*args, **kwargs):
+# делаем наши переменные объектами соответствующих классов
+# и переносим их с блока try в начало ф-и
     contacts = AddressBook(kwargs['contacts'])
-    name = Name(args[0]).strip().lower()
+    name = Name(args[0].strip().lower())
     phone = [Phone(phone.strip().lower()) for phone in args[1:]]
+# создаем новую переменную rec, чтобы работать с классом Record
     rec = Record(name, phone)
     try:
 # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
 # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
 # позиционные параметры add_funс (в мейне): result, contacts = func(*text, Contacts=Contacts)
+# без маг. метода hash в классе тут будет ошибка
         if not contacts.get(name):
+# вместо contacts[name] = phone присваиваем метод класса AddressBook
             contacts.add_record(rec)
             # contacts[name] = phone
         else:
@@ -71,20 +76,47 @@ def add_func(*args, **kwargs):
         pass
     return f"Contact {name} with phone {phone} successfully added", contacts
 
-@Index_Key_error_func
+# @Index_Key_error_func
+# def change_func(*args, **kwargs):
+#     contacts = AddressBook(kwargs['contacts'])
+# # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
+# # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
+# # позиционные параметры add_funс (в мейне): result = func(*text, Contacts=Contacts)
+#     name = Name(args[0].strip().lower())
+#     old_phone = Phone(args[0].strip().lower())
+#     # contacts[name] = ""
+#     new_phone = [Phone(phone.strip().lower()) for phone in args[1:]]
+#     # метод edit_phone у нас для списка, мы извлекаем список по ключу словаря
+#     if contacts.get(name):
+#         contacts.get(name).edit_phone(old_phone, new_phone)
+#         return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
+#     # if not contacts.get(name):
+#     #     contacts.add_record(rec)
+#     return f"Contact with name {name} doesn't exist", contacts
+
+
 def change_func(*args, **kwargs):
-    contacts = kwargs['contacts']
+    contacts = AddressBook(kwargs['contacts'])
 # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
 # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
 # позиционные параметры add_funс (в мейне): result = func(*text, Contacts=Contacts)
-    name = args[0].strip().lower()
-    old_phone = contacts[name]
-    contacts[name] = ""
-    new_phone = args[1:]
-    phone = [phone.strip().lower() for phone in args[1:]]
+    name = Name(args[0].strip().lower())
+    #old_phone = contacts.get(name) Це буде не old_phone, а екземпляр Record
+    # contacts[name] = ""
+    old_phone = Phone(args[1].strip().lower()) # буде на першій позиції в аргсах
+    new_phone = Phone(args[2].strip().lower()) # буде на другій позиції в аргсах
+    # rec = Record(name,new_phone) екземпляр Record потрібно дістати з книги контактів
     # если имени нет в словаре, оно добавится, если нет - поменяется номер
-    contacts[name] = new_phone
-    return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
+    # contacts[name] = new_phone
+    # метод edit_phone у нас для списка, мы извлекаем список по ключу словаря
+    rec = contacts.get(name)
+    if rec:
+        rec.edit_phone(old_phone, new_phone)
+        return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
+    # return f"Phone {new_phone} for contact {name} added successfully.", contacts # Якщо change буде додавати нові номери, то це не зовсім логічно(
+    return f'Contact with {name} dos not exist'
+
+
 
 
 @Index_Key_error_func
@@ -122,6 +154,7 @@ def exit_func(*args, **kwargs):
 
 # Ф-я handler проверяет, является ли введенный текст командой, сверяясь со словарем MODES,
 # и возвращает нужную ф-ю, а также текст после команды
+# никаких изменений в связи с перестройкой на классы
 def handler(text):
     for command, func in MODES.items():
         if text.lower().startswith(command):
@@ -150,6 +183,7 @@ MODES = {"hello": hello_func,
 
 # Передаем имя файла и путь к файлу с контактами в качестве аргументов
 def main(file_name):
+    # делаем словарь экземпляром объекта AddressBook, и все
     contacts = AddressBook(read_contacts(file_name))
     while True:
         # Ф-я handler проверяет, является ли введенный текст командой, сверяясь со словарем MODES,
