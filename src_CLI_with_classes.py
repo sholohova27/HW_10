@@ -28,7 +28,7 @@ def Index_Key_error_func(func):
         try:
             return func(*args, **kwargs)
         except IndexError:
-            return f'Print name and phone number via space', contacts
+            return f'Print name and phone/s number via space', contacts
         except KeyError:
             return f'Contact {name} is absent', contacts
     return inner
@@ -56,7 +56,8 @@ def help_func(*args, **kwargs):
 def add_func(*args, **kwargs):
 # делаем наши переменные объектами соответствующих классов
 # и переносим их с блока try в начало ф-и
-    contacts = AddressBook(kwargs['contacts'])
+# contacts делается экземпляром класса в мейне
+    contacts = kwargs['contacts']
     name = Name(args[0].strip().lower())
     phone = [Phone(phone.strip().lower()) for phone in args[1:]]
 # создаем новую переменную rec, чтобы работать с классом Record
@@ -76,25 +77,7 @@ def add_func(*args, **kwargs):
         pass
     return f"Contact {name} with phone {phone} successfully added", contacts
 
-# @Index_Key_error_func
-# def change_func(*args, **kwargs):
-#     contacts = AddressBook(kwargs['contacts'])
-# # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
-# # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
-# # позиционные параметры add_funс (в мейне): result = func(*text, Contacts=Contacts)
-#     name = Name(args[0].strip().lower())
-#     old_phone = Phone(args[0].strip().lower())
-#     # contacts[name] = ""
-#     new_phone = [Phone(phone.strip().lower()) for phone in args[1:]]
-#     # метод edit_phone у нас для списка, мы извлекаем список по ключу словаря
-#     if contacts.get(name):
-#         contacts.get(name).edit_phone(old_phone, new_phone)
-#         return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
-#     # if not contacts.get(name):
-#     #     contacts.add_record(rec)
-#     return f"Contact with name {name} doesn't exist", contacts
-
-
+@Index_Key_error_func
 def change_func(*args, **kwargs):
     contacts = kwargs['contacts']
 # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
@@ -109,12 +92,13 @@ def change_func(*args, **kwargs):
     # если имени нет в словаре, оно добавится, если нет - поменяется номер
     # contacts[name] = new_phone
     # метод edit_phone у нас для списка, мы извлекаем список по ключу словаря
-    rec = contacts.get(name.value)
+    # без str не работает, либо rec = contacts.get(name.value)
+    rec = contacts.get(str(name))
     if rec:
         rec.edit_phone(old_phone, new_phone)
         return f"Phone for contact {name} changed successfully.\nOld phone {old_phone}, new phone {new_phone}", contacts
     # return f"Phone {new_phone} for contact {name} added successfully.", contacts # Якщо change буде додавати нові номери, то це не зовсім логічно(
-    return f'Contact {name} dos not exist', contacts
+    return f"Contact {name} doesn't exist", contacts
 
 
 
@@ -125,15 +109,16 @@ def del_func(*args, **kwargs):
 # Забираем первый и второй элемент, т.к. ф-я handler, которую вызываем в мейне,
 # возвращает ф-ю и очищенный от команды список, к-й распаковывается через * в
 # позиционные параметры add_funс (в мейне): result = func(*text, Contacts=Contacts)
-    name = args[0].strip().lower()
-    contacts.pop(name)
+    name = Name(args[0].strip().lower())
+    # без str не находит ключ! (либо добавлять value)
+    contacts.pop(str(name))
     return f"Contact {name} successfully deleted", contacts
 
 @Index_Key_error_func
 def phone_func(*args, **kwargs):
     contacts = kwargs['contacts']
-    name = args[0].strip().lower()
-    return str(contacts[name]), contacts
+    name = Name(args[0].strip().lower())
+    return str(contacts.get(str(name))), contacts
 
 
 
@@ -183,7 +168,7 @@ MODES = {"hello": hello_func,
 
 # Передаем имя файла и путь к файлу с контактами в качестве аргументов
 def main(file_name):
-    # делаем словарь экземпляром объекта AddressBook, и все
+    # делаем словарь экземпляром объекта AddressBook, и все, contacts только тут, не нужно делать то же самое и  перезаписывать в ф-циях
     contacts = AddressBook(read_contacts(file_name))
     while True:
         # Ф-я handler проверяет, является ли введенный текст командой, сверяясь со словарем MODES,

@@ -79,10 +79,12 @@ class Record:
 class AddressBook(UserDict):
     # ожидает поля объекта Record (name, phone)
     def add_record(self, record: Record):
+        # эта запись приводила к проблемам с сериализацией: if record.name == self.get('name')
         if self.get(record.name.value):
             return f'{record.name.value} is already in contacts'
         # data - поле UserDict
         # т.к. в классе Name есть маг. метод __str__, можно просто record.name
+        # добавили value и-за проблем с сериализацией
         self.data[record.name.value] = record
         return f'{record.name.value} with {record.phones} phone is successfully added in contacts'
 
