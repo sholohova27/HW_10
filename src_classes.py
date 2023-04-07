@@ -59,7 +59,7 @@ class Record:
             return f'{old_phone} not in list'
 
     def __str__(self):
-        return f'{self.name.value} = {self.phones}'
+        return f'{self.phones}'
 
 
 # name1 = Record("Nataly", "+34")
